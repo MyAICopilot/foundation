@@ -41,7 +41,7 @@ function Leftpane({ courseData, onTopicClick }) {
 
   return (
     <div className="left-pane">
-      <h2 className="title-leftpane">Courses</h2>
+      <h2 className="title-leftpane">Business Frameworks</h2>
       {courseData.map((course, courseIndex) => (
         <div className="course" key={courseIndex}>
           <h3 onClick={() => handleCourseClick(courseIndex)}>

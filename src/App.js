@@ -22,7 +22,7 @@ const courseData = [
       "Cost Profile",
       "Asset Flow Analysis",
       "Negotiation",
-      "Value Creation - Value Capture Map",
+      // "Value Creation - Value Capture Map",
     ],
   },
   {

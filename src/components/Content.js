@@ -11,9 +11,27 @@ function Content({
   activeTopic,
   mode,
 }) {
+  // const [content, setContent] = useState("");
+
   useEffect(() => {
-    setmyContent("");
-  }, [mode]);
+    if (activeCourse !== null && activeTopic !== null) {
+      // const url = `/courses/${courseData[activeCourse].name}/${
+      //   courseData[activeCourse].topics[activeTopic]
+      // }/${mode.toLowerCase()}.md`;
+      const url = `${process.env.PUBLIC_URL}/courses/${
+        courseData[activeCourse].name
+      }/${
+        courseData[activeCourse].topics[activeTopic]
+      }/${mode.toLowerCase()}.md`;
+
+      console.log(url);
+
+      fetch(url)
+        .then((response) => response.text())
+        .then((text) => setmyContent(text))
+        .catch((err) => console.log(err));
+    }
+  }, [activeCourse, activeTopic, mode]);
 
   // Generate title
   const title =

@@ -4,15 +4,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Navbar.css";
 
 function Navbar({
-  handleDoc,
   handleLearn,
   handleQuiz,
   handleApply,
   mode,
   loading,
   isWaitingForResponse,
-  setmyContent,
-  documentContent,
 }) {
   const [showModal, setShowModal] = useState(false);
   const [settings, setSettings] = useState({
@@ -48,14 +45,6 @@ function Navbar({
     if (!loading) handler();
   };
 
-  const handleRefDocumentClick = (e) => {
-    e.preventDefault();
-    if (!loading) {
-      handleDoc();
-      setmyContent(documentContent);
-    }
-  };
-
   return (
     <>
       <nav className="navbar">
@@ -64,20 +53,12 @@ function Navbar({
           className="nav-item"
           onClick={(e) => {
             e.preventDefault();
-            // handleHelp();
+            handleOpenModal();
           }}
         >
           Help
         </a>
-        <a
-          href="#"
-          className={`nav-item ${mode === "Doc" ? "active" : ""} ${
-            isWaitingForResponse ? "link-disabled" : ""
-          }`}
-          onClick={handleRefDocumentClick}
-        >
-          Ref Document
-        </a>
+
         <a
           href="#"
           className={`nav-item ${mode === "Learn" ? "active" : ""} ${
@@ -85,9 +66,9 @@ function Navbar({
           }`}
           onClick={(e) => handleLinkClick(e, handleLearn)}
         >
-          Learn
+          Learn Frameworks
         </a>
-        <a
+        {/* <a
           href="#"
           className={`nav-item ${mode === "Quiz" ? "active" : ""} ${
             isWaitingForResponse ? "link-disabled" : ""
@@ -95,7 +76,7 @@ function Navbar({
           onClick={(e) => handleLinkClick(e, handleQuiz)}
         >
           Quiz
-        </a>
+        </a> */}
 
         <a
           href="#"
@@ -104,7 +85,7 @@ function Navbar({
           }`}
           onClick={(e) => handleLinkClick(e, handleApply)}
         >
-          Apply
+          Apply Frameworks
         </a>
 
         <a
@@ -125,60 +106,10 @@ function Navbar({
       >
         <Modal.Header closeButton>
           <div>
-            <Modal.Title>Account Settings</Modal.Title>
-            <p></p>
+            <Modal.Title>Work in progress...</Modal.Title>
           </div>{" "}
         </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={(e) => e.preventDefault()}>
-            <Form.Group>
-              {/* <Form.Label>Name</Form.Label> */}
-              {/* <Form.Control
-                type="text"
-                name="name"
-                value={settings.name}
-                onChange={handleChange}
-                className="expandable-input"
-              /> */}
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>
-                Brief background in few lines (education, profession, work
-                experience, hobbies/interests, etc.).
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                name="background"
-                value={settings.background}
-                onChange={handleChange}
-                className="expandable-input"
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>
-                Learning objectives (personal/career goals){" "}
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                name="objectives"
-                value={settings.objectives}
-                onChange={handleChange}
-                className="expandable-input"
-              />
-            </Form.Group>
-            {/* <Form.Group>
-              <Form.Label>Other Interests</Form.Label>
-              <Form.Control
-                as="textarea"
-                name="other"
-                value={settings.other}
-                onChange={handleChange}
-                className="expandable-input"
-              />
-            </Form.Group> */}
-            {/* Add more form groups as needed... */}
-          </Form>
-        </Modal.Body>
+        <Modal.Body></Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
             Cancel

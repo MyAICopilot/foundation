@@ -3,7 +3,6 @@ import Modal from "react-modal";
 import "../styles/Chatbox.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-// Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 
 Modal.setAppElement("#root");
 
@@ -14,6 +13,8 @@ function Chatbox({
   inputValue,
   handleClearChat,
   isWaitingForResponse,
+  handledownloadButtonClick,
+  handleTemplateUpdate,
 }) {
   const messageBoxRef = useRef(null);
 
@@ -38,7 +39,8 @@ function Chatbox({
               }`}
               key={index}
             >
-              <div className="message-id">{message.id}</div>
+              {/* message id not displayed for now {message.id} */}
+              {/* <div className="message-id">{message.id}</div> */}
               <pre
                 style={{ whiteSpace: "pre-wrap" }}
                 className={message.id.startsWith("Q") ? "question" : "answer"}
@@ -63,6 +65,10 @@ function Chatbox({
               }}
             >
               Clear chat
+            </button>
+            <button onClick={handleTemplateUpdate}>Update Template</button>
+            <button onClick={handledownloadButtonClick}>
+              Download Template
             </button>
           </div>
           <div className="toolpane-right"></div>

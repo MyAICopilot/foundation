@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react"; // Add useRef here
-import { sendMessageToServer } from "./components/Chatapi";
 import Navbar from "./components/Navbar";
 import Leftpane from "./components/Leftpane";
 import Chatbox from "./components/Chatbox";
-import Content from "./components/Content";
+import Learnmode from "./components/Learnmode";
+import Applymode from "./components/Applymode";
 import Loginform from "./components/Loginform";
+import axios from "axios";
 
 import "./styles/App.css";
 
@@ -12,15 +13,18 @@ const courseData = [
   {
     name: "Strategy",
     topics: [
+      "SWOT Analysis",
       "Porter's 5 Forces",
+      "PESTEL Analysis",
+      "Force Field Analysis",
+      "Asset Flow Analysis",
+      "Strategic Option Assessment",
       "Value Map",
       "Value Bar",
       "Value Net",
       "Choice Map",
-      "SWOT Analysis",
       "Game Theory",
       "Cost Profile",
-      "Asset Flow Analysis",
       "Negotiation",
       // "Value Creation - Value Capture Map",
     ],
@@ -55,7 +59,7 @@ const courseData = [
 ];
 
 function App() {
-  const [messages, setMessages] = useState([]);
+  // const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const messageCounter = useRef(1);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
@@ -66,8 +70,35 @@ function App() {
   const [userPrompt, setUserPrompt] = useState(""); // Add this state variable to hold the user prompt
   const [loading, setLoading] = useState(false);
   const [fileClicked, setFileClicked] = useState(false);
-  const [activeCourse, setActiveCourse] = useState(null);
-  const [activeTopic, setActiveTopic] = useState(null);
+  const [activeCourse, setActiveCourse] = useState(0);
+  const [activeTopic, setActiveTopic] = useState(0);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [templateUpdate, setTemplateUpdate] = useState([]); // Add this line
+  const [templateData, setTemplateData] = useState({});
+
+  const [swotUpdate, setSwotUpdate] = useState([]);
+  const [porterUpdate, setPorterUpdate] = useState([]);
+  const [pestelUpdate, setPestelUpdate] = useState([]);
+  const [forcefieldUpdate, setForceFieldUpdate] = useState([]);
+  const [assetflowUpdate, setAssetFlowUpdate] = useState([]);
+  const [strategicoptionUpdate, setStrategicOptionUpdate] = useState([]);
+  const [valuemapUpdate, setValueMapUpdate] = useState([]);
+  const [gridUpdate, setGridUpdate] = useState([]);
+
+  const handleTopicClickUpdate = (title, newData) => {
+    setTemplateData((prevData) => ({
+      ...prevData,
+      [title]: newData,
+    }));
+  };
+
+  const [messages, setMessages] = useState([
+    {
+      sender: "Bot",
+      text: "Please explain your business idea or scenario and we will do business analysis based on the business framework that you have selected in the leftpane (SWOT, PESTEL, etc)",
+      id: `A0`,
+    },
+  ]);
 
   const handleTopicClick = (courseIndex, topicIndex) => {
     setActiveCourse(courseIndex);
@@ -116,31 +147,54 @@ function App() {
 
     console.log(courseData[activeCourse].name);
     console.log(courseData[activeCourse].topics[activeTopic]);
+
     // Format message for display, which doesn't include the content
     let messageForDisplay = inputValue;
     messageForDisplay = `${mode}: ${courseData[activeCourse].name} > ${courseData[activeCourse].topics[activeTopic]}\nUser: ${inputValue}`;
 
     const newMessage = {
-      text: messageForDisplay,
       sender: "user",
+      mode: mode,
+      topic: courseData[activeCourse].name,
+      subtopic: courseData[activeCourse].topics[activeTopic],
+      text: messageForDisplay,
       id: `Q${messageCounter.current}`,
     };
-
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    let updatedChatHistory = [...chatHistory, newMessage];
+    setChatHistory(updatedChatHistory);
 
     // Send the user's message to your server
     try {
       setIsWaitingForResponse(true);
-      const botMessageText = await sendMessageToServer(messageWithContext);
+      // const botMessageText = await sendMessageToServer(messageWithContext);
+      // const response = await axios.post("http://localhost:3010/gpt-call", {
+
+      const response = await axios.post(
+        "https://foundation-9e297d48523a.herokuapp.com/gpt-call",
+        {
+          chatHistory: updatedChatHistory,
+        }
+      );
+
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+      console.log(response.data);
 
       const botMessage = {
-        text: botMessageText,
-        sender: "bot",
+        sender: "Bot",
+        mode: mode,
+        topic: courseData[activeCourse].name,
+        subtopic: courseData[activeCourse].topics[activeTopic],
+        text: response.data.completion,
         id: `A${messageCounter.current}`,
       };
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
+
+      setChatHistory((prevChatHistory) => [...prevChatHistory, botMessage]);
+      setMessages((prevMessages) => [...prevMessages, newMessage, botMessage]);
     } catch (error) {
       console.error(error);
+
       alert("An error occurred while generating a response.");
     } finally {
       setIsWaitingForResponse(false);
@@ -152,7 +206,9 @@ function App() {
 
   const handleClearChat = () => {
     setMessages([]);
+    setChatHistory([]); // Add this line to clear the chat history
     messageCounter.current = 1;
+    setInputValue("");
   };
 
   const handleLearn = () => {
@@ -171,6 +227,138 @@ function App() {
     setMode("Learn");
   }, []); // Empty dependency array to run only on mount
 
+  ///////////////////  call for update template ////////////////////
+  const handleTemplateUpdate = async () => {
+    try {
+      // Send the chat history to your server
+      // const response = await axios.post(
+      //   "http://localhost:3010/update-template",{}
+
+      const response = await axios.post(
+        "https://foundation-9e297d48523a.herokuapp.com/update-template",
+        {
+          chatHistory,
+        }
+      );
+
+      // Expect the response to be an array of strings, where each string is the new content for a textarea
+      const Templateupdate = Object.values(response.data);
+      console.log(Templateupdate);
+      // setTemplateUpdate(Templateupdate); // update state here
+      // Check the active topic and update the corresponding state
+      setGridUpdate(Templateupdate);
+      switch (courseData[activeCourse].topics[activeTopic]) {
+        case "SWOT Analysis":
+          setSwotUpdate(Templateupdate);
+          break;
+        case "Porter's 5 Forces":
+          setPorterUpdate(Templateupdate);
+          break;
+        case "PESTEL Analysis":
+          setPestelUpdate(Templateupdate);
+          break;
+        case "Force Field Analysis":
+          setForceFieldUpdate(Templateupdate);
+          break;
+        case "Asset Flow Analysis":
+          setAssetFlowUpdate(Templateupdate);
+          break;
+        case "Strategic Option Assessment":
+          setStrategicOptionUpdate(Templateupdate);
+          break;
+        case "Value Map":
+          setValueMapUpdate(Templateupdate);
+          break;
+        // and so on for other topics...
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    switch (courseData[activeCourse].topics[activeTopic]) {
+      case "SWOT Analysis":
+        setGridUpdate(swotUpdate);
+        break;
+      case "Porter's 5 Forces":
+        setGridUpdate(porterUpdate);
+        break;
+      case "PESTEL Analysis":
+        setGridUpdate(pestelUpdate);
+        break;
+      case "Force Field Analysis":
+        setGridUpdate(forcefieldUpdate);
+        break;
+      case "Asset Flow Analysis":
+        setGridUpdate(assetflowUpdate);
+        break;
+      case "Strategic Option Assessment":
+        setGridUpdate(strategicoptionUpdate);
+        break;
+      case "Value Map":
+        setGridUpdate(valuemapUpdate);
+        break;
+      // and so on for other topics...
+      default:
+        break;
+    }
+  }, [activeTopic]);
+
+  ///////////////////  call for download template ////////////////////
+
+  async function handledownloadButtonClick() {
+    try {
+      const replacements = {};
+      // Extract the chat history from the state
+      const chatHistory = messages
+        .map((message) => `${message.sender}: ${message.text}`)
+        .join("\n");
+
+      // Create the body of the POST request
+      const body = {
+        replacements,
+        chatHistory,
+      };
+
+      // const response = await fetch("http://localhost:3010/download-template", {
+      const response = await axios.post(
+        "https://foundation-9e297d48523a.herokuapp.com/download-template",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      // Convert response into a blob
+      const blob = await response.blob();
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary download link
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Set the download file name
+      link.download = "updated_template.pptx";
+
+      // Programmatically click the download link to start the download
+      link.click();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
   return (
     <div className="App">
       <>
@@ -184,6 +372,8 @@ function App() {
         />
         <div className="panes-container">
           <Leftpane
+            activeCourse={activeCourse}
+            activeTopic={activeTopic}
             selectedFile={selectedFile}
             setSelectedFile={setSelectedFile}
             mode={mode}
@@ -195,14 +385,27 @@ function App() {
             courseData={courseData}
             onTopicClick={handleTopicClick}
           />
-          <Content
-            myContent={myContent}
-            setmyContent={setmyContent}
-            courseData={courseData}
-            activeCourse={activeCourse}
-            activeTopic={activeTopic}
-            mode={mode}
-          />
+          {mode === "Apply" ? (
+            <Applymode
+              title={`${courseData[activeCourse].name} > ${courseData[activeCourse].topics[activeTopic]}`}
+              handleTopicClickUpdate={handleTopicClickUpdate}
+              gridUpdate={gridUpdate}
+              storedTemplateData={
+                templateData[
+                  `${courseData[activeCourse].name} > ${courseData[activeCourse].topics[activeTopic]}`
+                ] || {}
+              }
+            />
+          ) : (
+            <Learnmode
+              myContent={myContent}
+              setmyContent={setmyContent}
+              courseData={courseData}
+              activeCourse={activeCourse}
+              activeTopic={activeTopic}
+              mode={mode}
+            />
+          )}
           <div className="chatbox-container">
             <Chatbox
               handleSendMessage_chat={handleSendMessage_chat}
@@ -211,6 +414,8 @@ function App() {
               inputValue={inputValue} // add this line
               handleClearChat={handleClearChat}
               isWaitingForResponse={isWaitingForResponse}
+              handledownloadButtonClick={handledownloadButtonClick}
+              handleTemplateUpdate={handleTemplateUpdate}
             />
           </div>
         </div>

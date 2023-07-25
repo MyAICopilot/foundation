@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Collapse } from "react-collapse";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 
 import "../styles/Leftpane.css";
 
+// function Leftpane({ courseData, onTopicClick }) {
 function Leftpane({ courseData, onTopicClick }) {
   const [activeCourse, setActiveCourse] = useState(null);
   const [activeTopic, setActiveTopic] = useState(null);
   const [expandedCourses, setExpandedCourses] = useState([]); // Add this state
+  // const [expandedCourses, setExpandedCourses] = useState([activeCourse]); // Set Strategy as expanded by default
 
   // const handleCourseClick = (courseIndex) => {
   //   // If the course being clicked is currently active, set the active course to null
@@ -38,6 +40,11 @@ function Leftpane({ courseData, onTopicClick }) {
     setActiveTopic(topicIndex);
     onTopicClick(courseIndex, topicIndex);
   };
+
+  useEffect(() => {
+    handleTopicClick(0, 0); // 0, 0 is the index of Strategy course and SWOT topic respectively.
+    setExpandedCourses([0]); // 0 is the index of Strategy course.
+  }, []);
 
   return (
     <div className="left-pane">
